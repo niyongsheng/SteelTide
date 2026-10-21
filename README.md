@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/assets/app-icon.png" width="120" height="120" alt="Steel Tide 应用图标" />
+</p>
+
 # Steel Tide · 钢铁潮汐
 
 基于 Kenney《Top-Down Tanks Redux》素材的双关卡坦克生存游戏，Vite + Phaser 3，桌面 / 手机 / 手柄可玩。
