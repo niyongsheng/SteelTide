@@ -81,7 +81,8 @@ export default class Joystick {
   }
 
   _createGfx() {
-    this.gfx = this.scene.add.graphics().setDepth(1000)
+    // 必须绘制在场景 HUD 之上：本作世界物体深度按 y 排序（1000+），1000 会被坦克盖住
+    this.gfx = this.scene.add.graphics().setDepth(9500)
     this.gfx.setScrollFactor(0)
   }
 

@@ -73,5 +73,15 @@ export default class GameAudio {
   pickup() { this._tone(660, 660, 0.08, 'sine', 0.15); this._tone(990, 990, 0.1, 'sine', 0.15, 0.08) }
   upgrade() { [523, 659, 784].forEach((f, i) => this._tone(f, f, 0.12, 'triangle', 0.15, i * 0.09)) }
   waveStart() { this._tone(440, 440, 0.1, 'square', 0.1); this._tone(660, 660, 0.12, 'square', 0.1, 0.1) }
+  stepComplete() { [659, 880, 1175].forEach((f, i) => this._tone(f, f, 0.11, 'triangle', 0.16, i * 0.08)) }
+  victory() {
+    [523, 659, 784, 1046, 1318].forEach((f, i) => this._tone(f, f, 0.18, 'triangle', 0.18, i * 0.12))
+    this._noise(0.5, 0.12, 2200, 0.1)
+  }
+  warning() {
+    this._tone(240, 110, 0.36, 'sawtooth', 0.22)
+    this._tone(200, 90, 0.4, 'square', 0.16, 0.32)
+    this._noise(0.35, 0.18, 400, 0.1)
+  }
   gameover() { [392, 311, 233, 155].forEach((f, i) => this._tone(f, f * 0.9, 0.25, 'triangle', 0.2, i * 0.18)) }
 }

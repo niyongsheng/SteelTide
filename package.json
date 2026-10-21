@@ -1,7 +1,7 @@
 {
   "name": "steel-tide",
   "private": true,
-  "description": "无尽波次生存坦克游戏 — 基于 Kenney 素材的 Phaser 3 双端小游戏",
+  "description": "双关卡坦克生存游戏（教学 + 计时生存）— 基于 Kenney Top-Down Tanks 素材的 Phaser 3 双端小游戏",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
