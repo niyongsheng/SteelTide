@@ -2,6 +2,16 @@ import Phaser from 'phaser'
 
 export const TILE = 64
 
+// 第二关沙漠竞技场尺寸：35×25 格 = 2240×1600
+export const DESERT_COLS = 35
+export const DESERT_ROWS = 25
+export const DESERT_MAIN_COL = Math.floor(DESERT_COLS / 2)
+export const DESERT_MAIN_ROW = Math.floor(DESERT_ROWS / 2)
+export const DESERT_START = {
+  x: DESERT_MAIN_COL * TILE + TILE / 2,
+  y: DESERT_MAIN_ROW * TILE + TILE / 2,
+}
+
 const cell = (gx, gy) => ({ x: gx * TILE + TILE / 2, y: gy * TILE + TILE / 2 })
 
 function paintGround(scene, cols, rows, keyA, keyB) {
@@ -159,35 +169,41 @@ export function buildTrainingGround(scene) {
   return { cols, rows }
 }
 
-/** 第二关：沙漠竞技场（更大的地图、更多掩体与油污） */
+/** 第二关：更大的沙漠竞技场（35×25，更多掩体与油污） */
 export function buildDesertArena(scene) {
-  const cols = 26
-  const rows = 19
+  const cols = DESERT_COLS
+  const rows = DESERT_ROWS
+  const mainRow = DESERT_MAIN_ROW
+  const mainCol = DESERT_MAIN_COL
   paintGround(scene, cols, rows, 'tileSand1', 'tileSand2')
-  paintCrossRoad(scene, cols, rows, 9, 13, 'Sand', 'tileSand_roadCrossing')
+  paintCrossRoad(scene, cols, rows, mainRow, mainCol, 'Sand', 'tileSand_roadCrossing')
 
-  // 两条南北向支路，让沙地地图不是单调的十字路口
+  // 两条南北向支路，让大地图不是单调的十字路口
   const roadCells = new Set()
-  for (let x = 0; x < cols; x++) roadCells.add(`${x},9`)
-  for (let y = 0; y < rows; y++) roadCells.add(`13,${y}`)
-  roadTile(scene, 20, 9, 'tileSand_roadSplitN')
-  for (let y = 0; y <= 8; y++) {
-    roadTile(scene, 20, y, 'tileSand_roadNorth')
-    roadCells.add(`20,${y}`)
+  for (let x = 0; x < cols; x++) roadCells.add(`${x},${mainRow}`)
+  for (let y = 0; y < rows; y++) roadCells.add(`${mainCol},${y}`)
+
+  const northCol = mainCol + 10
+  roadTile(scene, northCol, mainRow, 'tileSand_roadSplitN')
+  for (let y = 0; y < mainRow; y++) {
+    roadTile(scene, northCol, y, 'tileSand_roadNorth')
+    roadCells.add(`${northCol},${y}`)
   }
-  roadTile(scene, 8, 9, 'tileSand_roadSplitS')
-  for (let y = 10; y < rows; y++) {
-    roadTile(scene, 8, y, 'tileSand_roadNorth')
-    roadCells.add(`8,${y}`)
+  const southCol = mainCol - 10
+  roadTile(scene, southCol, mainRow, 'tileSand_roadSplitS')
+  for (let y = mainRow + 1; y < rows; y++) {
+    roadTile(scene, southCol, y, 'tileSand_roadNorth')
+    roadCells.add(`${southCol},${y}`)
   }
 
   const placed = []
 
-  // 四辆废弃坦克残骸（实体掩体，使用整坦克贴图）
+  // 废弃坦克残骸（实体掩体，使用整坦克贴图）
   const wrecks = [
-    [4, 4, 'tank_dark', 0.55], [22, 5, 'tank_sand', -0.8],
-    [5, 15, 'tank_green', 1.15], [21, 14, 'tank_red', -0.35],
-    [2, 8, 'tank_bigRed', 0.9], [23, 11, 'tank_darkLarge', -0.6],
+    [5, 5, 'tank_dark', 0.55], [30, 6, 'tank_sand', -0.8],
+    [4, 20, 'tank_green', 1.15], [29, 19, 'tank_red', -0.35],
+    [3, 9, 'tank_bigRed', 0.9], [31, 14, 'tank_darkLarge', -0.6],
+    [12, 3, 'tank_huge', 0.25], [23, 22, 'tank_bigRed', 1.4],
   ]
   for (const [gx, gy, key, rotation] of wrecks) {
     const p = cell(gx, gy)
@@ -198,10 +214,12 @@ export function buildDesertArena(scene) {
 
   // 工事旁散落的油桶（俯视）
   const topBarrels = [
-    [7, 4, 'barrelRust_top'],
-    [19, 13, 'barrelGreen_top'],
-    [18, 3, 'barrelRed_top'],
-    [9, 14, 'barrelBlack_top'],
+    [9, 6, 'barrelRust_top'],
+    [25, 17, 'barrelGreen_top'],
+    [21, 4, 'barrelRed_top'],
+    [12, 21, 'barrelBlack_top'],
+    [30, 9, 'barrelRust_top'],
+    [5, 16, 'barrelGreen_top'],
   ]
   for (const [gx, gy, key] of topBarrels) {
     const p = cell(gx, gy)
@@ -209,11 +227,12 @@ export function buildDesertArena(scene) {
     placed.push(p)
   }
 
-  // 三组沙袋工事
+  // 四组沙袋工事
   const sandbags = [
-    [6, 5], [7, 5], [6, 6],
-    [19, 12], [20, 12], [20, 13],
-    [17, 4], [18, 4], [17, 5],
+    [8, 7], [9, 7], [8, 8],
+    [26, 16], [27, 16], [26, 17],
+    [22, 6], [23, 6], [22, 7],
+    [13, 19], [14, 19], [13, 20],
   ]
   for (const [gx, gy] of sandbags) {
     const p = cell(gx, gy)
@@ -236,7 +255,7 @@ export function buildDesertArena(scene) {
     })
 
   let attempts = 0
-  while (placed.length < 68 && attempts < 5000) {
+  while (placed.length < 112 && attempts < 9000) {
     attempts++
     const gx = Phaser.Math.Between(1, cols - 2)
     const gy = Phaser.Math.Between(1, rows - 2)
@@ -244,7 +263,7 @@ export function buildDesertArena(scene) {
     if (roadCells.has(`${gx},${gy}`)) continue
     const p = cell(gx, gy)
     // 中央出生区留空
-    if (Math.abs(gx - 13) <= 2 && Math.abs(gy - 9) <= 2) continue
+    if (Math.abs(gx - mainCol) <= 3 && Math.abs(gy - mainRow) <= 3) continue
     if (tooClose(p.x, p.y)) continue
     placed.push(p)
     if (Math.random() < 0.36) {
@@ -264,19 +283,19 @@ export function buildDesertArena(scene) {
   // 油污减速带
   let oils = 0
   let oilAttempts = 0
-  while (oils < 6 && oilAttempts < 200) {
+  while (oils < 9 && oilAttempts < 300) {
     oilAttempts++
     const gx = Phaser.Math.Between(1, cols - 2)
     const gy = Phaser.Math.Between(1, rows - 2)
     const p = cell(gx, gy)
-    if (Math.abs(gx - 13) <= 3 && Math.abs(gy - 9) <= 3) continue
+    if (Math.abs(gx - mainCol) <= 3 && Math.abs(gy - mainRow) <= 3) continue
     if (tooClose(p.x, p.y)) continue
     addOil(scene, p.x, p.y, Math.random() < 0.5)
     oils++
   }
 
   // 散落装饰
-  for (let i = 0; i < 46; i++) {
+  for (let i = 0; i < 70; i++) {
     const gx = Phaser.Math.Between(1, cols - 2)
     const gy = Phaser.Math.Between(1, rows - 2)
     const p = cell(gx, gy)
@@ -293,7 +312,7 @@ export function buildDesertArena(scene) {
   }
 
   // 旧履带印
-  for (let i = 0; i < 34; i++) {
+  for (let i = 0; i < 52; i++) {
     const gx = Phaser.Math.Between(1, cols - 2)
     const gy = Phaser.Math.Between(1, rows - 2)
     const p = cell(gx, gy)

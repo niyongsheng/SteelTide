@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import CombatScene, { DEPTH } from './CombatScene.js'
-import { buildDesertArena, TILE } from '../js/MapBuilder.js'
+import { buildDesertArena, TILE, DESERT_COLS, DESERT_ROWS, DESERT_START } from '../js/MapBuilder.js'
 import { getBestTime, saveBestTime } from '../js/storage.js'
 import { pickSurvivalType } from '../js/enemyTypes.js'
 import { FONT, PIXEL_FONT, COLOR, drawPanel, formatTime } from '../js/ui.js'
@@ -12,11 +12,11 @@ export default class SurvivalScene extends CombatScene {
 
   getLevelConfig() {
     return {
-      mapW: 26 * TILE,
-      mapH: 19 * TILE,
+      mapW: DESERT_COLS * TILE,
+      mapH: DESERT_ROWS * TILE,
       player: {
-        x: 13 * TILE + TILE / 2,
-        y: 9 * TILE + TILE / 2,
+        x: DESERT_START.x,
+        y: DESERT_START.y,
         hp: 100,
         damage: 17,
         fireRate: 220,
@@ -127,8 +127,8 @@ export default class SurvivalScene extends CombatScene {
     // 连续增援（越来越快）
     this.spawnTimer -= dt
     if (this.spawnTimer <= 0) {
-      this.spawnTimer = Math.max(0.55, 2.7 - t * 0.016)
-      if (this.enemies.countActive(true) < 38) this._spawnAtEdge(t)
+      this.spawnTimer = Math.max(0.5, 2.55 - t * 0.016)
+      if (this.enemies.countActive(true) < 48) this._spawnReinforcement(t)
     }
 
     // 波次爆发队列（错峰出生）
@@ -136,7 +136,7 @@ export default class SurvivalScene extends CombatScene {
       this.burstTimer -= dt
       if (this.burstTimer <= 0) {
         this.burstTimer = 0.22
-        this._spawnAtEdge(t, this.burstQueue.shift())
+        this._spawnReinforcement(t, this.burstQueue.shift())
       }
     }
 
@@ -189,7 +189,7 @@ export default class SurvivalScene extends CombatScene {
     this._banner(`第 ${wave} 波`, '敌军增援正在逼近')
     this.audio.waveStart()
     this.cameras.main.flash(120, 240, 180, 60, false)
-    const count = Math.min(3 + wave, 12)
+    const count = Math.min(4 + wave, 14)
     for (let i = 0; i < count; i++) {
       this.burstQueue.push(pickSurvivalType(this.timeAlive))
     }
@@ -204,10 +204,31 @@ export default class SurvivalScene extends CombatScene {
     }
   }
 
-  _spawnAtEdge(t, forcedType) {
+  _spawnReinforcement(t, forcedType) {
     const type = forcedType || pickSurvivalType(t)
-    const p = this._findSpawnPoint(470)
+    const p = this._findSpawnPoint(900)
     this._spawnEnemy(type, p.x, p.y, this._diff(t))
+  }
+
+  /**
+   * 大地图使用环形增援：在玩家视野外 900-1200px 处生成，
+   * 保留大空间的走位价值，同时避免敌人从地图边缘长途跋涉导致节奏变慢。
+   */
+  _findSpawnPoint(minDist = 900) {
+    const margin = 80
+    const minRadius = Math.max(900, minDist)
+    const maxRadius = 1200
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const radius = Phaser.Math.Between(minRadius, maxRadius)
+      const x = Phaser.Math.Clamp(this.playerBody.x + Math.cos(angle) * radius, margin, this.mapW - margin)
+      const y = Phaser.Math.Clamp(this.playerBody.y + Math.sin(angle) * radius, margin, this.mapH - margin)
+      const distance = Phaser.Math.Distance.Between(this.playerBody.x, this.playerBody.y, x, y)
+      if (distance < minRadius * 0.9) continue
+      if (this._spawnBlocked(x, y)) continue
+      return { x, y }
+    }
+    return super._findSpawnPoint(minDist)
   }
 
   _spawnBoss(t) {
