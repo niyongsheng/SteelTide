@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import GameAudio from '../js/Audio.js'
 import GamepadInput from '../js/GamepadInput.js'
+import { addScreenChrome } from '../js/screenChrome.js'
 import { getBestTime, isTutorialDone } from '../js/storage.js'
 import { FONT, PIXEL_FONT, COLOR, formatTime, FocusList } from '../js/ui.js'
 
@@ -24,6 +25,7 @@ export default class MenuScene extends Phaser.Scene {
     this._buildTitle(W)
     this._buildLevelCards(W)
     this._buildFooter(W, H)
+    addScreenChrome(this, { x: W - 28, y: 26 })
 
     this.toastText = this.add
       .text(W / 2, H - 34, '', {
@@ -100,7 +102,7 @@ export default class MenuScene extends Phaser.Scene {
     if (!this.footerRight) return
     this.footerRight.setText(this.pad?.connected
       ? '手柄  十字键/左摇杆 选择 · A 开始'
-      : '方向键 / 1 / 2 选择关卡')
+      : '方向键 / 1 / 2 选择关卡 · F 全屏')
   }
 
   /* ---------------- 背景 ---------------- */

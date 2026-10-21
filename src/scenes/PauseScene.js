@@ -1,4 +1,5 @@
 import GamepadInput from '../js/GamepadInput.js'
+import { addScreenChrome } from '../js/screenChrome.js'
 import { getBestTime } from '../js/storage.js'
 import { FONT, PIXEL_FONT, COLOR, drawPanel, formatTime, makeButton, FocusList } from '../js/ui.js'
 
@@ -22,6 +23,7 @@ export default class PauseScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('rgba(0,0,0,0)')
     this.cameras.main.fadeIn(150, 3, 5, 8)
     this.add.rectangle(W / 2, H / 2, W, H, 0x04070a, 0.72)
+    addScreenChrome(this, { x: W - 28, y: 26, github: false })
 
     const cardW = 720
     const cardH = 460
@@ -136,7 +138,7 @@ export default class PauseScene extends Phaser.Scene {
     if (!this.hintText) return
     this.hintText.setText(this.pad?.connected
       ? '手柄  方向键/左摇杆 选择 · A 确认 · B / Start 继续'
-      : '键盘  方向键 选择 · Enter 确认 · Esc 继续')
+      : '键盘  方向键 选择 · Enter 确认 · Esc 继续 · F 全屏')
   }
 
   _activateFocused() {

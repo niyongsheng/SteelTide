@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { buildShareImage, shareImage } from '../js/Share.js'
 import GamepadInput from '../js/GamepadInput.js'
+import { addScreenChrome } from '../js/screenChrome.js'
 import { FONT, PIXEL_FONT, COLOR, drawPanel, formatTime, makeButton, FocusList } from '../js/ui.js'
 
 export default class ResultScene extends Phaser.Scene {
@@ -25,6 +26,7 @@ export default class ResultScene extends Phaser.Scene {
 
     // 暗幕
     this.add.rectangle(W / 2, H / 2, W, H, 0x04070a, 0.7)
+    addScreenChrome(this, { x: W - 28, y: 26 })
 
     const cardW = 780
     const cardH = 500

@@ -149,6 +149,95 @@ export function makeButton(scene, {
   return c
 }
 
+const PILL_STYLES = {
+  fill: 0x0b1219,
+  fillAlpha: 0.78,
+  hoverFill: 0x1b2a38,
+  stroke: 0x74899c,
+  strokeAlpha: 0.5,
+  hoverStroke: 0xf0b429,
+  hoverStrokeAlpha: 0.85,
+  text: '#c6d1dc',
+  hoverText: '#ffe08a',
+  icon: 0xc6d1dc,
+  hoverIcon: 0xffe08a,
+}
+
+/**
+ * 紧凑型胶囊按钮，用于页面角落的辅助控件（全屏、GitHub 等）。
+ * originX 为水平锚点：1 表示从 x 向左延伸，0 表示向右延伸。
+ * icon(g, size, color) 可在右侧绘制小图标，坐标以图标中心为原点。
+ */
+export function makePillButton(scene, {
+  x, y, label, icon, onClick, onHover, originX = 1,
+  height = 34, fontSize = 13, paddingX = 14, gap = 8, iconSize = 14, depth = 30,
+}) {
+  const c = scene.add.container(x, y).setDepth(depth)
+  const g = scene.add.graphics()
+  const text = scene.add.text(0, 0, label, {
+    fontFamily: FONT, fontSize: `${fontSize}px`, fontStyle: 'bold',
+    color: PILL_STYLES.text, resolution: 2,
+  }).setOrigin(0, 0.5)
+  const iconG = icon ? scene.add.graphics() : null
+
+  const contentW = text.width + (icon ? gap + iconSize : 0)
+  const w = Math.ceil(contentW + paddingX * 2)
+  const left = -w * originX
+  const top = -height / 2
+  text.setPosition(left + paddingX, 0.5)
+  if (iconG) iconG.setPosition(left + paddingX + text.width + gap + iconSize / 2, 0)
+
+  let hovered = false
+  let pressed = false
+  const draw = () => {
+    g.clear()
+    g.fillStyle(0x000000, 0.4)
+    g.fillRoundedRect(left + 2, top + 3, w, height, height / 2)
+    g.fillStyle(hovered ? PILL_STYLES.hoverFill : PILL_STYLES.fill, hovered ? 0.96 : PILL_STYLES.fillAlpha)
+    g.fillRoundedRect(left, top, w, height, height / 2)
+    g.lineStyle(1, hovered ? PILL_STYLES.hoverStroke : PILL_STYLES.stroke, hovered ? PILL_STYLES.hoverStrokeAlpha : PILL_STYLES.strokeAlpha)
+    g.strokeRoundedRect(left, top, w, height, height / 2)
+    text.setColor(hovered ? PILL_STYLES.hoverText : PILL_STYLES.text)
+    c.setScale(pressed ? 0.97 : 1)
+    if (iconG) {
+      iconG.clear()
+      icon(iconG, iconSize, hovered ? PILL_STYLES.hoverIcon : PILL_STYLES.icon)
+    }
+  }
+
+  const zone = scene.add
+    .zone(left + w / 2, 0, w, height)
+    .setInteractive({ useHandCursor: true })
+  zone.on('pointerover', () => {
+    hovered = true
+    draw()
+    onHover?.()
+  })
+  zone.on('pointerout', () => {
+    hovered = false
+    pressed = false
+    draw()
+  })
+  zone.on('pointerdown', () => {
+    pressed = true
+    draw()
+  })
+  zone.on('pointerup', () => {
+    if (!pressed) return
+    pressed = false
+    draw()
+    onClick?.()
+  })
+
+  c.add([g, text])
+  if (iconG) c.add(iconG)
+  c.add(zone)
+  c.pillWidth = w
+  c.redraw = draw
+  draw()
+  return c
+}
+
 /**
  * 小型通用焦点列表：按钮或关卡卡片都只需实现 setFocused(bool)。
  * items: [{ button, action, disabled? }]

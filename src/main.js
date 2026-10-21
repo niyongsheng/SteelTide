@@ -5,6 +5,7 @@ import TutorialScene from './scenes/TutorialScene.js'
 import SurvivalScene from './scenes/SurvivalScene.js'
 import ResultScene from './scenes/ResultScene.js'
 import PauseScene from './scenes/PauseScene.js'
+import { isFullscreenSupported, toggleFullscreen } from './js/fullscreen.js'
 import './style.css'
 
 const config = {
@@ -45,3 +46,17 @@ const config = {
 const game = new Phaser.Game(config)
 // 调试钩子：浏览器控制台可访问 window.__game
 window.__game = game
+
+// 全局 F 键切换全屏（菜单、暂停、战斗中都可使用）
+if (isFullscreenSupported()) {
+  window.addEventListener('keydown', (event) => {
+    if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return
+    if (event.key !== 'f' && event.key !== 'F') return
+    const target = event.target
+    if (target instanceof HTMLElement) {
+      const tag = target.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) return
+    }
+    toggleFullscreen().catch((err) => console.warn('[Steel Tide] 切换全屏失败:', err))
+  })
+}
